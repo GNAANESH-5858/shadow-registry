@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Shadow Registry – Identity & Geospatial Audit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              syne: ['Syne', 'system-ui', 'sans-serif'],
+              mono: ['Space Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+            },
+            colors: {
+              neon: '#00ff41'
+            }
+          }
+        }
+      };
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.8/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.0/dist/umd/supabase.js"></script>
+  </head>
+  <body class="bg-[#050505] text-zinc-100 font-syne">
+    <div class="network-bg" aria-hidden="true"></div>
+
+    <main class="relative z-10 min-h-screen px-4 py-8">
+      <header class="mx-auto flex max-w-6xl flex-col gap-4 border-b border-zinc-900 pb-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-[10px] font-semibold tracking-[0.3em] text-neon">
+            SHADOW REGISTRY // LIVE NODE
+          </p>
+          <h1 class="mt-1 bg-gradient-to-r from-neon to-cyan-400 bg-clip-text text-2xl font-bold text-transparent">
+            Identity & Geospatial Residency Audit
+          </h1>
+          <p class="text-[12px] text-zinc-400">
+            Phone‑verified sessions, OpenStreetMap density, IP cross‑check, and on‑chain certificate anchoring.
+          </p>
+        </div>
+
+        <div class="text-right text-[10px]">
+          <p class="font-semibold text-zinc-400">SECURITY STATUS</p>
+          <div class="mt-1 flex items-center justify-end gap-2">
+            <span id="statusEncrypted" class="status-pill status-on">ENCRYPTED</span>
+            <span id="statusTracking" class="status-pill status-off">IDLE</span>
+          </div>
+        </div>
+      </header>
+
+      <section id="stage-1" class="mx-auto mt-8 flex max-w-5xl flex-col gap-8 md:flex-row">
+        <div class="w-full max-w-md rounded-xl border border-zinc-900 bg-black/80 p-6 shadow-2xl">
+          <p class="text-[10px] font-semibold tracking-[0.25em] text-neon">
+            STAGE 1 // IDENTITY
+          </p>
+          <h2 class="mt-1 bg-gradient-to-r from-neon to-cyan-400 bg-clip-text text-lg font-semibold text-transparent">
+            Create Shadow Session
+          </h2>
+          <p class="mt-1 text-[11px] text-zinc-500">
+            We use Supabase Auth (OTP) to bind a phone number to this residency audit. No Aadhaar is collected.
+          </p>
+
+          <form id="identityForm" class="mt-4 space-y-3 text-[12px]">
+            <div>
+              <label class="block text-[11px] text-zinc-300">Full name</label>
+              <input
+                id="nameInput"
+                class="input-field"
+                placeholder="ENTER FULL LEGAL NAME"
+                autocomplete="name"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] text-zinc-300">Phone number</label>
+              <input
+                id="phoneInput"
+                class="input-field font-mono"
+                placeholder="+91XXXXXXXXXX"
+                autocomplete="tel"
+                required
+              />
+              <p class="mt-1 text-[10px] text-zinc-500">
+                Supabase will send a one‑time passcode to this number.
+              </p>
+            </div>
+            <div id="otpBlock" class="hidden">
+              <label class="block text-[11px] text-zinc-300">OTP code</label>
+              <input
+                id="otpInput"
+                class="input-field font-mono"
+                placeholder="6‑digit code"
+                inputmode="numeric"
+              />
+            </div>
+
+            <p id="identityError" class="hidden text-[11px] text-red-500"></p>
+
+            <button
+              id="identityBtn"
+              type="submit"
+              class="btn-primary w-full"
+            >
+              SEND OTP
+            </button>
+          </form>
+
+          <div id="sessionInfo" class="mt-4 hidden rounded border border-zinc-800 bg-zinc-900/60 p-3 text-[10px] text-zinc-400">
+            <p class="font-semibold text-zinc-200">Session token</p>
+            <p id="sessionTokenText" class="mt-1 break-all font-mono text-[10px] text-neon"></p>
+            <p class="mt-2">
+              Share this link with a neighbour:
+            </p>
+            <p id="peerLink" class="mt-1 break-all font-mono text-[10px] text-cyan-400"></p>
+          </div>
+        </div>
+
+        <div class="flex-1 rounded-xl border border-zinc-900 bg-black/80 p-6">
+          <p class="text-[10px] font-semibold tracking-[0.25em] text-neon">
+            STAGE 2 // LOCATION
+          </p>
+          <h2 class="mt-1 bg-gradient-to-r from-neon to-cyan-400 bg-clip-text text-lg font-semibold text-transparent">
+            Lock Geospatial Anchor
+          </h2>
+
+          <div class="mt-4 flex flex-col gap-3 text-[12px] md:flex-row">
+            <div class="flex-1">
+              <label class="block text-[11px] text-zinc-300">Latitude</label>
+              <input id="latInput" class="input-field font-mono" placeholder="12.9716" />
+            </div>
+            <div class="flex-1">
+              <label class="block text-[11px] text-zinc-300">Longitude</label>
+              <input id="lngInput" class="input-field font-mono" placeholder="77.5946" />
+            </div>
+            <button id="useIpBtn" class="btn-secondary mt-6 h-10 text-[10px]">
+              USE IP LOCATION
+            </button>
+          </div>
+
+          <div id="map" class="mt-4 h-72 w-full rounded-lg border border-zinc-800"></div>
+
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-zinc-400">
+            <span id="osmInfo">OSM density: –</span>
+            <span id="ipInfo">IP distance: –</span>
+          </div>
+
+          <button id="verifyBtn" class="btn-primary mt-4 w-full text-[11px]">
+            RUN RESIDENCY MODEL
+          </button>
+        </div>
+      </section>
+
+      <section id="stage-3" class="mx-auto mt-8 max-w-5xl rounded-xl border border-zinc-900 bg-black/80 p-6">
+        <p class="text-[10px] font-semibold tracking-[0.25em] text-neon">
+          STAGE 3 // CONFIDENCE
+        </p>
+        <div class="mt-1 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <h2 class="bg-gradient-to-r from-neon to-cyan-400 bg-clip-text text-xl font-semibold text-transparent">
+            Residency Confidence Score
+          </h2>
+          <div class="text-right text-[10px] text-zinc-400">
+            <p>Satellite + OSM + Peers + IP</p>
+            <p id="blockchainInfo" class="mt-1 text-cyan-400">No certificate anchored yet.</p>
+          </div>
+        </div>
+
+        <div class="mt-6 flex flex-col gap-6 md:flex-row">
+          <div class="flex-1">
+            <div class="score-orb">
+              <span id="scoreValue" class="score-text">0.0%</span>
+            </div>
+            <ul class="mt-4 space-y-1 text-[11px] text-zinc-400">
+              <li id="satelliteRow">Satellite stability: –</li>
+              <li id="densityRow">OSM building density: –</li>
+              <li id="peersRow">Peer consensus: –</li>
+              <li id="ipRow">IP match: –</li>
+            </ul>
+          </div>
+
+          <div class="flex-1 space-y-3 text-[11px] text-zinc-300">
+            <p>
+              Once peers respond, this console will pull updated votes every 3 seconds and re-run
+              the scoring model in real time.
+            </p>
+            <button id="downloadPdfBtn" class="btn-primary w-full" disabled>
+              DOWNLOAD CERTIFICATE PDF
+            </button>
+            <p class="text-[10px] text-zinc-500">
+              On download, the certificate hash is anchored to Polygon Mumbai. The transaction hash
+              will be embedded in the PDF and shown above.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+      window.SHADOW_SUPABASE_URL = 'https://ngxkbyglgmismfwbwaed.supabase.co';
+      window.SHADOW_SUPABASE_ANON_KEY = 'your_full_anon_key_here';
+    </script>
+    ```
+    
+    Replace `your_full_anon_key_here` with the full publishable key from your Supabase API Keys page.
+    
+    Save the file, then move to **Step 6** — in Cursor terminal run:
+    ```
+    npm install
+    ```
+    
+    Once that finishes, run:
+    ```
+    npm run dev
+  </body>
+</html>
+

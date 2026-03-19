@@ -1,0 +1,115 @@
+body {
+  position: relative;
+  min-height: 100vh;
+}
+
+.network-bg {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, #00ff4140 0, transparent 40%),
+    radial-gradient(circle at 80% 80%, #22d3ee26 0, transparent 45%),
+    radial-gradient(circle at 60% 10%, #00ff4120 0, transparent 40%),
+    #020617;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.input-field {
+  width: 100%;
+  border-radius: 0.4rem;
+  border: 1px solid #18181b;
+  background: #020617;
+  padding: 0.4rem 0.6rem;
+  font-size: 12px;
+  color: #e5e7eb;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.input-field:focus {
+  border-color: #00ff41;
+  box-shadow: 0 0 0 1px #00ff4120;
+  background: #020617;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid #00ff41;
+  background: linear-gradient(90deg, #00ff41, #22d3ee);
+  color: #020617;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.75rem;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s ease;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px #00ff4130;
+}
+
+.btn-secondary {
+  border-radius: 999px;
+  border: 1px solid #27272a;
+  background: #020617;
+  color: #e5e7eb;
+  padding: 0.35rem 0.9rem;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.btn-secondary:hover {
+  border-color: #00ff41;
+  color: #a5b4fc;
+}
+
+.status-pill {
+  border-radius: 999px;
+  border-width: 1px;
+  padding: 0.2rem 0.6rem;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+}
+
+.status-on {
+  border-color: #00ff41;
+  color: #00ff41;
+}
+
+.status-off {
+  border-color: #27272a;
+  color: #71717a;
+}
+
+.score-orb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid #00ff4160;
+  background: radial-gradient(circle at 20% 0, #22d3ee55, transparent 60%),
+    radial-gradient(circle at 80% 120%, #00ff4140, transparent 60%);
+  width: 220px;
+  height: 220px;
+  box-shadow: 0 0 40px #00ff4125;
+}
+
+.score-text {
+  font-family: 'Syne', system-ui, sans-serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  background: linear-gradient(120deg, #00ff41, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 0.05em;
+}
+
